@@ -37,12 +37,12 @@ jobs:
     - run: npm ci
     - run: npm run build-examples
 
-    # - name: Commit Examples
-    #   uses: EndBug/add-and-commit@v7
-    #   with:
-    #     add: 'javascript/example/bundle'
-    #     message: 'update builds'
-    #     push: 'origin HEAD:examples --force'
+    - name: Commit Examples
+      uses: EndBug/add-and-commit@v7
+      with:
+        add: 'javascript/example/bundle'
+        message: 'update builds'
+        push: 'origin HEAD:examples --force'
     # - name: Upload static files as artifact
     #   id: deployment
     #   uses: actions/upload-pages-artifact@v3 # or specific "vX.X.X" version tag for this action
