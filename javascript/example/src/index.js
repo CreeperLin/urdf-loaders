@@ -449,7 +449,7 @@ const updateList = () => {
         el.addEventListener('click', e => {
 
             const urdf = e.target.getAttribute('urdf');
-            const color = e.target.getAttribute('color');
+            const color = e.target.getAttribute('color') || '#263238';
 
             viewer.up = '+Z';
             document.getElementById('up-select').value = viewer.up;
@@ -471,7 +471,7 @@ document.addEventListener('WebComponentsReady', () => {
 
     // stop the animation if user tried to manipulate the model
     viewer.addEventListener('manipulate-start', e => animToggle.classList.remove('checked'));
-    viewer.addEventListener('urdf-processed', e => updateAngles());
+    // viewer.addEventListener('urdf-processed', e => updateAngles());
     updateLoop();
     viewer.camera.position.set(-5.5, 3.5, 5.5);
 
