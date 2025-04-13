@@ -133,16 +133,29 @@ input:focus {
     flex-direction: column;
     max-height: 100%;
     margin: 20px;
+    width: 20%;
+}
+
+#menu2 {
+    position: absolute;
+    top: 0;
+    right: 0;
+    display: flex;
+    flex-direction: column;
+    max-height: 100%;
+    margin: 20px;
 }
 
 #urdf-options {
     text-overflow: ellipsis;
+    overflow-y: auto;
+    max-height: 10%;
 }
 
 #urdf-options li {
     cursor: pointer;
     opacity: 0.5;
-    font-size: 20px;
+    font-size: 12px;
     font-weight: 100;
 }
 
@@ -161,6 +174,20 @@ input:focus {
 }
 
 #controls > * {
+    margin: 5px 0;
+}
+
+#controls2 {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    margin: 15px 0;
+    transition: 0.5s opacity ease;
+    overflow: hidden;
+}
+
+#controls2 > * {
     margin: 5px 0;
 }
 
@@ -203,6 +230,20 @@ input:focus {
     overflow-y: auto;
 }
 
+#controls2 ul {
+    flex: 1;
+    overflow-y: auto;
+}
+
+
+#controls2.hidden > *:not(#toggle-controls) {
+    display: none;
+}
+
+#controls2.hidden #toggle-controls {
+    opacity: 0.5;
+}
+
 #controls.hide-fixed li[joint-type="fixed"]{
 
     display: none;
@@ -228,7 +269,7 @@ input:focus {
 #controls li span {
 
     padding: 0 5px;
-    max-width: 175px;
+    width: 200px;
     text-overflow: ellipsis;
     overflow: hidden;
     user-select: none;
@@ -236,6 +277,43 @@ input:focus {
 }
 
 #controls li input[type="number"] {
+    width: 50px;
+    overflow: hidden;
+}
+
+#controls2 li {
+    font-size: 16px;
+    display: flex;
+    align-items: center;
+    padding: 1px 0;
+
+    width: 100%;
+    user-select: text;
+
+    transition: background 0.25s ease;
+}
+
+#controls2 li[robot-hovered] {
+    background: rgba(255,255,255,0.35);
+}
+
+#controls2 li span {
+
+    padding: 0 5px;
+    width: 200px;
+    text-align: right;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    user-select: none;
+
+}
+
+#controls2 li input[type="number"] {
+    width: 70px;
+    overflow: hidden;
+}
+
+#controls2 li input[type="range"] {
     width: 50px;
     overflow: hidden;
 }

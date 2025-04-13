@@ -20,7 +20,10 @@ class URDFViewer extends HTMLElement {
 
     static get observedAttributes() {
 
-        return ['package', 'urdf', 'up', 'display-shadow', 'ambient-color', 'ignore-limits', 'show-collision'];
+        return [
+            'package', 'urdf', 'up', 'display-shadow', 'ambient-color', 'ignore-limits', 'show-collision', 'show-visual',
+            'show-axis',
+        ];
 
     }
 
@@ -50,6 +53,12 @@ class URDFViewer extends HTMLElement {
 
     get showCollision() { return this.hasAttribute('show-collision') || false; }
     set showCollision(val) { val ? this.setAttribute('show-collision', true) : this.removeAttribute('show-collision'); }
+
+    get showVisual() { return this.hasAttribute('show-visual') ? this.getAttribute('show-visual') == 'true' : true; }
+    set showVisual(val) { val ? this.setAttribute('show-visual', true) : this.setAttribute('show-visual', false); }
+
+    get showAxis() { return this.hasAttribute('show-axis') || false; }
+    set showAxis(val) { val ? this.setAttribute('show-axis', true) : this.removeAttribute('show-axis'); }
 
     get jointValues() {
 
@@ -128,15 +137,40 @@ class URDFViewer extends HTMLElement {
         const world = new THREE.Object3D();
         scene.add(world);
 
+        this.planeCollisionMaterial = new MeshPhongMaterial({
+            transparent: true,
+            opacity: 0.85,
+            shininess: 2.5,
+            premultipliedAlpha: true,
+            color: 0xffbe38,
+            polygonOffset: true,
+            polygonOffsetFactor: -1,
+            polygonOffsetUnits: -1,
+        });
+        this.planeMaterial = new THREE.ShadowMaterial({ side: THREE.DoubleSide, transparent: true, opacity: 0.25 });
         const plane = new THREE.Mesh(
             new THREE.PlaneGeometry(40, 40),
-            new THREE.ShadowMaterial({ side: THREE.DoubleSide, transparent: true, opacity: 0.25 }),
+            this.planeMaterial,
+            // planeMaterial,
         );
         plane.rotation.x = -Math.PI / 2;
-        plane.position.y = -0.5;
+        // plane.position.y = -0.5;
+        plane.position.y = -0;
         plane.receiveShadow = true;
         plane.scale.set(10, 10, 10);
         scene.add(plane);
+        const cube = new THREE.Mesh(
+            new THREE.BoxGeometry(1, 1, 1),
+            new THREE.MeshNormalMaterial({ transparent: true, opacity: 0.5 }),
+        );
+        cube.castShadow = true;
+        cube.receiveShadow = true;
+        cube.scale.set(0.1, 0.1, 0.1);
+        this.cube = cube;
+        scene.add(cube);
+        const axis = new THREE.AxesHelper(1);
+        scene.add(axis);
+        this.axis = axis;
 
         // Controls setup
         const controls = new OrbitControls(camera, renderer.domElement);
@@ -359,7 +393,7 @@ class URDFViewer extends HTMLElement {
 
         const center = bbox.getCenter(new THREE.Vector3());
         this.controls.target.y = center.y;
-        this.plane.position.y = bbox.min.y - 1e-3;
+        this.robot.position.z = this.robot.position.z - bbox.min.y;
 
         const dirLight = this.directionalLight;
         dirLight.castShadow = this.displayShadow;
@@ -503,6 +537,7 @@ class URDFViewer extends HTMLElement {
                 }
 
                 this.robot = robot;
+                this.robot.position.z = 0.5;
                 this.world.add(robot);
                 updateMaterials(robot);
 
@@ -536,10 +571,21 @@ class URDFViewer extends HTMLElement {
     _updateCollisionVisibility() {
 
         const showCollision = this.showCollision;
+        const showVisual = this.showVisual;
+        const showAxis = this.showAxis;
         const collisionMaterial = this._collisionMaterial;
         const robot = this.robot;
 
         if (robot === null) return;
+
+        this.axis.visible = showAxis;
+        this.cube.visible = showAxis;
+
+        if (showCollision) {
+            this.plane.material = this.planeCollisionMaterial;
+        } else {
+            this.plane.material = this.planeMaterial;
+        }
 
         const colliders = [];
         robot.traverse(c => {
@@ -566,6 +612,16 @@ class URDFViewer extends HTMLElement {
                 }
 
             });
+
+        });
+
+        robot.traverse(c => {
+
+            if (c.isURDFVisual) {
+
+                c.visible = showVisual;
+
+            }
 
         });
 

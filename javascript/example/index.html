@@ -22,13 +22,23 @@
 
             <div id="controls" class="hidden">
                 <div id="toggle-controls"></div>
-                <div>Drag and drop URDF files or folders! <br/> (Chrome Only)</div>
-                <div id="ignore-joint-limits" class="toggle">Ignore Joint Limits</div>
-                <div id="hide-fixed" class="toggle">Hide Fixed Joints</div>
-                <div id="radians-toggle" class="toggle">Use Radians</div>
-                <div id="autocenter-toggle" class="toggle checked">Autocenter</div>
-                <div id="collision-toggle" class="toggle">Show Collision</div>
-                <div id="do-animate" class="toggle checked">Animate Joints</div>
+                <div style="float: left;">
+                    <input id="ignore-joint-limits" type="checkbox"><label for="ignore-joint-limits">Ignore Joint Limits</label>
+                    <input id="hide-fixed" type="checkbox"><label for="hide-fixed">Hide Fixed Joints</label>
+                </div>
+                <div style="float: left;">
+                    <input id="radians-toggle" type="checkbox"><label for="radians-toggle">Use Radians</label>
+                    <input id="do-animate" type="checkbox"><label for="do-animate">Animate Joints</label>
+                </div>
+                <div style="float: left;">
+                    <input id="visual-toggle" type="checkbox" checked><label for="visual-toggle">Show Visual</label>
+                    <input id="collision-toggle" type="checkbox"><label for="collision-toggle">Show Collision</label>
+                    <input id="axis-toggle" type="checkbox"><label for="axis-toggle">Show axis</label>
+                </div>
+                <div style="float: left;">
+                    <input id="autocenter-toggle" type="checkbox" checked><label for="autocenter-toggle">Autocenter</label>
+                </div>
+                <div id="reset-joints" class="button">Reset Joints</div>
                 <label>
                     Up Axis
                     <select id="up-select">
@@ -36,14 +46,20 @@
                         <option value="-X">-X</option>
                         <option value="+Y">+Y</option>
                         <option value="-Y">-Y</option>
-                        <option value="+Z">+Z</option>
-                        <option value="-Z" selected>-Z</option>
+                        <option value="+Z" selected>+Z</option>
+                        <option value="-Z" >-Z</option>
                     </select>
                 </label>
                 <ul></ul>
             </div>
         </div>
-        <urdf-viewer up="-Z" display-shadow tabindex="0"></urdf-viewer>
+
+        <div id="menu2">
+            <div id="controls2" class="hidden">
+                <ul></ul>
+            </div>
+        </div>
+        <urdf-viewer up="+Z" display-shadow tabindex="0"></urdf-viewer>
 
         <script src="./src/index.js"></script>
     </body>
