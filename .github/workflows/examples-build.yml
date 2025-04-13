@@ -3,10 +3,10 @@
 
 name: Build Examples
 
-permissions:
-  contents: read
-  pages: write
-  id-token: write
+# permissions:
+#   contents: read
+#   pages: write
+#   id-token: write
 
 on:
   push:
@@ -43,11 +43,11 @@ jobs:
     #     add: 'javascript/example/bundle'
     #     message: 'update builds'
     #     push: 'origin HEAD:examples --force'
-    - name: Upload static files as artifact
-      id: deployment
-      uses: actions/upload-pages-artifact@v3 # or specific "vX.X.X" version tag for this action
-      with:
-        path: javascript/example/bundle/
+    # - name: Upload static files as artifact
+    #   id: deployment
+    #   uses: actions/upload-pages-artifact@v3 # or specific "vX.X.X" version tag for this action
+    #   with:
+    #     path: javascript/example/bundle/
 
   # deploy:
     - name: Deploy to GitHub Pages
