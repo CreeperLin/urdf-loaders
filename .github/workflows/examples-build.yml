@@ -32,9 +32,14 @@ jobs:
     - run: npm ci
     - run: npm run build-examples
 
-    - name: Commit Examples
-      uses: EndBug/add-and-commit@v7
+    # - name: Commit Examples
+    #   uses: EndBug/add-and-commit@v7
+    #   with:
+    #     add: 'javascript/example/bundle'
+    #     message: 'update builds'
+    #     push: 'origin HEAD:examples --force'
+    - name: Deploy to GitHub Pages
+      uses: peaceiris/actions-gh-pages@v3
       with:
-        add: 'javascript/example/bundle'
-        message: 'update builds'
-        push: 'origin HEAD:examples --force'
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        publish_dir: ./javascript/example/bundle

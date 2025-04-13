@@ -54,7 +54,7 @@ class URDFViewer extends HTMLElement {
     get showCollision() { return this.hasAttribute('show-collision') || false; }
     set showCollision(val) { val ? this.setAttribute('show-collision', true) : this.removeAttribute('show-collision'); }
 
-    get showVisual() { return this.hasAttribute('show-visual') ? this.getAttribute('show-visual') == 'true' : true; }
+    get showVisual() { return this.hasAttribute('show-visual') ? this.getAttribute('show-visual') === 'true' : true; }
     set showVisual(val) { val ? this.setAttribute('show-visual', true) : this.setAttribute('show-visual', false); }
 
     get showAxis() { return this.hasAttribute('show-axis') || false; }
