@@ -44,10 +44,10 @@ jobs:
     #     github_token: ${{ secrets.GITHUB_TOKEN }}
     #     publish_dir: ./javascript/example/bundle
     - name: Upload static files as artifact
-        id: deployment
-        uses: actions/upload-pages-artifact@v3 # or specific "vX.X.X" version tag for this action
-        with:
-          path: javascript/example/bundle
+      id: deployment
+      uses: actions/upload-pages-artifact@v3 # or specific "vX.X.X" version tag for this action
+      with:
+        path: javascript/example/bundle
 
   deploy:
     environment:
