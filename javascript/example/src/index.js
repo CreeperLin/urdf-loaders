@@ -135,16 +135,37 @@ viewer.addEventListener('angle-change', e => {
 });
 
 viewer.addEventListener('joint-mouseover', e => {
+    const jointName = e.detail;
+    const joint = viewer.robot.joints[jointName];
+    const child = joint.children[0];
+    const parent = joint.parent;
 
-    const j = document.querySelector(`li[joint-name="${ e.detail }"]`);
+    // highlight the joint
+    const j = document.querySelector(`li[joint-name="${ jointName }"]`);
     if (j) j.setAttribute('robot-hovered', true);
-
+    // highlight the link
+    const l = document.querySelector(`li[link-name="${ child.name }"]`);
+    if (l) l.setAttribute('robot-hovered', true);
+    // highlight the parent link
+    const pl = document.querySelector(`li[link-name="${ parent.name }"]`);
+    if (pl) pl.setAttribute('robot-hovered', true);
 });
 
 viewer.addEventListener('joint-mouseout', e => {
+    const jointName = e.detail;
+    const joint = viewer.robot.joints[jointName];
+    const child = joint.children[0];
+    const parent = joint.parent;
 
-    const j = document.querySelector(`li[joint-name="${ e.detail }"]`);
+    // highlight the joint
+    const j = document.querySelector(`li[joint-name="${ jointName }"]`);
     if (j) j.removeAttribute('robot-hovered');
+    // highlight the link
+    const l = document.querySelector(`li[link-name="${ child.name }"]`);
+    if (l) l.removeAttribute('robot-hovered');
+    // highlight the parent link
+    const pl = document.querySelector(`li[link-name="${ parent.name }"]`);
+    if (pl) pl.removeAttribute('robot-hovered');
 
 });
 
@@ -168,10 +189,63 @@ viewer.addEventListener('manipulate-end', e => {
 
 });
 
+function getFloatCtrl(o) { return(parseFloat(o.value)); }
+function getIntCtrl(o) { return(parseInt(o.value)); }
+function mouseCtrl(ctrl) {
+    var getCtrl = getFloatCtrl;
+    var setCtrl = scaledFloatCtrl;
+    var startpos; // starting mouse position
+    var startval; // starting input control value
+    // find the input element to allow mouse control on
+    // on mousedown start tracking mouse relative position
+    var min = ctrl.min;
+    var max = ctrl.max;
+    ctrl.onmousedown = function(e) {
+      startpos = e.clientX;
+      startval = getCtrl(ctrl);
+      if (isNaN(startval)) startval = 0;
+      document.onmousemove = function(e) {
+        var delta = Math.ceil(e.clientX - startpos);      
+        setCtrl(ctrl, startval, delta, min, max);
+      };
+      document.onmouseup = function() {
+        document.onmousemove = null; // remove mousemove to stop tracking
+      };
+    };
+  /*
+  ctrl.addEventListener('touchstart', function(e) {
+    e.preventDefault();
+    startpos = e.touches[0].pageX;
+    startval = getCtrl(ctrl);
+  }, false);
+  ctrl.addEventListener('touchmove', function(e) {
+    e.preventDefault();
+    var delta = Math.ceil(e.touches[0].clientX - startpos);        
+    setCtrl(ctrl, startval, delta);
+  }, false);
+  */
+}
+
+// takes current value and relative mouse coordinate as arguments
+function scaledFloatCtrl(o, i, x, min, max) {
+    console.log('scaledFloatCtrl', o, i, x, min, max);
+    var incVal = Math.sign(x) * Math.pow(Math.abs(x) * 0.01, 1.6);
+    if (isNaN(incVal)) incVal = 0;
+    var newVal = i + incVal;
+    let dz = 0.01 * (max - min);
+    if (min !== undefined && newVal < min) newVal = min;
+    if (max !== undefined && newVal > max) newVal = max;
+    if (Math.abs(incVal)>dz) o.value = newVal; // allow small deadzone
+}
+
 // create the sliders
 viewer.addEventListener('urdf-processed', () => {
-
+    const resetJointValues = viewer.angles;
+    for (const name in resetJointValues) resetJointValues[name] = 0;
+    viewer.setJointValues(resetJointValues);
     const r = viewer.robot;
+    const world = viewer.world;
+    world.updateMatrixWorld();
     Object
         .keys(r.links)
         .map(key => r.links[key])
@@ -180,65 +254,65 @@ viewer.addEventListener('urdf-processed', () => {
             li.innerHTML =
             `
             <span title="${ link.name }">${ link.name }</span>
-            <input class="link_x" type="range" value="0" step="0.0001"/>
-            <input class="link_x" type="number" step="0.0001" />
-            <input class="link_y" type="range" value="0" step="0.0001"/>
-            <input class="link_y" type="number" step="0.0001" />
-            <input class="link_z" type="range" value="0" step="0.0001"/>
-            <input class="link_z" type="number" step="0.0001" />
+            <input class="link_x" type="number" step="0.01" />
+            <input class="link_y" type="number" step="0.01" />
+            <input class="link_z" type="number" step="0.01" />
+            <input class="link_rx" type="number" step="0.01" />
+            <input class="link_ry" type="number" step="0.01" />
+            <input class="link_rz" type="number" step="0.01" />
             `;
             li.setAttribute('link-name', link.name);
             linkSliderList.appendChild(li);
             // update the joint display
             // const slider = li.querySelector('input[type="range"]');
             // const input = li.querySelector('input[type="number"]');
-            const sliderX = li.querySelector('input.link_x[type="range"]');
             const inputX = li.querySelector('input.link_x[type="number"]');
-            const sliderY = li.querySelector('input.link_y[type="range"]');
             const inputY = li.querySelector('input.link_y[type="number"]');
-            const sliderZ = li.querySelector('input.link_z[type="range"]');
             const inputZ = li.querySelector('input.link_z[type="number"]');
+            const inputRX = li.querySelector('input.link_rx[type="number"]');
+            const inputRY = li.querySelector('input.link_ry[type="number"]');
+            const inputRZ = li.querySelector('input.link_rz[type="number"]');
             let max_v = 2;
-            sliderX.min = -max_v;
-            sliderX.max = max_v;
-            sliderY.min = -max_v;
-            sliderY.max = max_v;
-            sliderZ.min = -max_v;
-            sliderZ.max = max_v;
+            let min_v = -2;
+            inputX.min = min_v;
+            inputX.max = max_v;
+            inputY.min = min_v;
+            inputY.max = max_v;
+            inputZ.min = min_v;
+            inputZ.max = max_v;
+            inputRX.min = -Math.PI;
+            inputRX.max = Math.PI;
+            inputRY.min = -Math.PI;
+            inputRY.max = Math.PI;
+            inputRZ.min = -Math.PI;
+            inputRZ.max = Math.PI;
+            mouseCtrl(inputX);
+            mouseCtrl(inputY);
+            mouseCtrl(inputZ);
             li.update = () => {
-                // let pos = [link.matrixWorld.elements[12], link.matrixWorld.elements[13], link.matrixWorld.elements[14]];
-                let pos = [link.matrixWorld.elements[12], link.matrixWorld.elements[14], link.matrixWorld.elements[13]];
-                
-                sliderX.value = pos[0];
-                sliderY.value = pos[1];
-                sliderZ.value = pos[2];
-                inputX.value = pos[0];
-                inputY.value = pos[1];
-                inputZ.value = pos[2];
-
+                let mat = link.matrixWorld.elements;
+                let pos = [mat[12], mat[14], mat[13]];
+                inputX.value = pos[0].toFixed(4);
+                inputY.value = pos[1].toFixed(4);
+                inputZ.value = pos[2].toFixed(4);
+                let euler = new THREE.Euler();
+                euler.setFromRotationMatrix(link.matrixWorld, 'XYZ');
+                let worldRot = world.rotation;
+                // let rot2 = [euler.x, euler.y, euler.z];
+                let rot2 = [euler.x - worldRot.x, euler.y - worldRot.y, euler.z - worldRot.z];
+                inputRX.value = rot2[0].toFixed(4);
+                inputRY.value = rot2[1].toFixed(4);
+                inputRZ.value = rot2[2].toFixed(4);
             };
-            sliderX.addEventListener('input', () => {
-                li.update();
-            });
             inputX.addEventListener('change', () => {
                 li.update();
             });
-            sliderY.addEventListener('input', () => {
-                li.update();
-            }
-            );
             inputY.addEventListener('change', () => {
                 li.update();
-            }
-            );
-            sliderZ.addEventListener('input', () => {
-                li.update();
-            }
-            );
+            });
             inputZ.addEventListener('change', () => {
                 li.update();
-            }
-            );
+            });
             li.update();
             linkSliders[link.name] = li;
         });
@@ -268,7 +342,7 @@ viewer.addEventListener('urdf-processed', () => {
             `
             <span title="${ joint.name }">${ joint.name }</span>
             <input type="range" value="0" step="0.0001"/>
-            <input type="number" step="0.0001" />
+            <input type="number" step="0.1" />
             `;
             li.setAttribute('joint-type', joint.jointType);
             li.setAttribute('joint-name', joint.name);

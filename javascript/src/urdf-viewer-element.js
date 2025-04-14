@@ -139,17 +139,17 @@ class URDFViewer extends HTMLElement {
 
         this.planeCollisionMaterial = new MeshPhongMaterial({
             transparent: true,
-            opacity: 0.85,
+            opacity: 0.35,
             shininess: 2.5,
             premultipliedAlpha: true,
-            color: 0xffbe38,
+            color: 0xff38be,
             polygonOffset: true,
             polygonOffsetFactor: -1,
             polygonOffsetUnits: -1,
         });
         this.planeMaterial = new THREE.ShadowMaterial({ side: THREE.DoubleSide, transparent: true, opacity: 0.25 });
         const plane = new THREE.Mesh(
-            new THREE.PlaneGeometry(40, 40),
+            new THREE.PlaneGeometry(5, 5),
             this.planeMaterial,
             // planeMaterial,
         );
@@ -157,7 +157,7 @@ class URDFViewer extends HTMLElement {
         // plane.position.y = -0.5;
         plane.position.y = -0;
         plane.receiveShadow = true;
-        plane.scale.set(10, 10, 10);
+        // plane.scale.set(10, 10, 10);
         scene.add(plane);
         const cube = new THREE.Mesh(
             new THREE.BoxGeometry(1, 1, 1),
@@ -537,6 +537,7 @@ class URDFViewer extends HTMLElement {
                 }
 
                 this.robot = robot;
+                console.log('robot', robot);
                 this.robot.position.z = 0.5;
                 this.world.add(robot);
                 updateMaterials(robot);
