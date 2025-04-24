@@ -169,6 +169,7 @@ class URDFViewer extends HTMLElement {
         this.cube = cube;
         scene.add(cube);
         const axis = new THREE.AxesHelper(1);
+        axis.rotation.x = -Math.PI / 2;
         scene.add(axis);
         this.axis = axis;
 
@@ -383,13 +384,24 @@ class URDFViewer extends HTMLElement {
 
         this.world.updateMatrixWorld();
 
-        const bbox = new THREE.Box3();
-        bbox.makeEmpty();
+        const bbox_c = new THREE.Box3();
+        bbox_c.makeEmpty();
         robot.traverse(c => {
-            if (c.isURDFVisual) {
-                bbox.expandByObject(c);
+            if (c.isURDFCollider) {
+                bbox_c.expandByObject(c);
             }
         });
+        const bbox_v = new THREE.Box3();
+        bbox_v.makeEmpty();
+        robot.traverse(c => {
+            if (c.isURDFVisual) {
+                bbox_v.expandByObject(c);
+            }
+        });
+        let bbox = bbox_c;
+        if (bbox_c.isEmpty()) {
+            bbox = bbox_v;
+        }
 
         const center = bbox.getCenter(new THREE.Vector3());
         this.controls.target.y = center.y;
@@ -419,6 +431,7 @@ class URDFViewer extends HTMLElement {
 
         }
 
+        this.dispatchEvent(new CustomEvent('angle-change', { bubbles: true, cancelable: true, }));
     }
 
     _scheduleLoad() {

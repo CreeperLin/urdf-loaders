@@ -42,31 +42,44 @@ const setColor = color => {
 
 };
 
+const updateViewerOptions = () => {
+    const options = {
+        showCollision: collisionToggle.checked,
+        showVisual: visualToggle.checked,
+        showAxis: axisToggle.checked,
+        ignoreLimits: limitsToggle.checked,
+        noAutoRecenter: !autocenterToggle.checked,
+        // up: upSelect.value,
+    };
+    // console.log('updateViewerOptions', options);
+
+    Object.keys(options).forEach(key => viewer[key] = options[key]);
+
+}
+
+updateViewerOptions();
+
+
 // Events
 // toggle checkbox
 limitsToggle.addEventListener('click', () => {
-    limitsToggle.classList.toggle('checked');
-    viewer.ignoreLimits = limitsToggle.classList.contains('checked');
+    viewer.ignoreLimits = limitsToggle.checked;
 });
 
 radiansToggle.addEventListener('click', () => {
-    radiansToggle.classList.toggle('checked');
     Object
         .values(sliders)
         .forEach(sl => sl.update());
 });
 
 collisionToggle.addEventListener('click', () => {
-    collisionToggle.classList.toggle('checked');
-    viewer.showCollision = collisionToggle.classList.contains('checked');
+    viewer.showCollision = collisionToggle.checked;
 });
 visualToggle.addEventListener('click', () => {
-    visualToggle.classList.toggle('checked');
-    viewer.showVisual = visualToggle.classList.contains('checked');
+    viewer.showVisual = visualToggle.checked;
 });
 axisToggle.addEventListener('click', () => {
-    axisToggle.classList.toggle('checked');
-    viewer.showAxis = axisToggle.classList.contains('checked');
+    viewer.showAxis = axisToggle.checked;
 });
 resetJointsButton.addEventListener('click', () => {
     const resetJointValues = viewer.angles;
@@ -75,14 +88,13 @@ resetJointsButton.addEventListener('click', () => {
 });
 
 autocenterToggle.addEventListener('click', () => {
-    autocenterToggle.classList.toggle('checked');
-    viewer.noAutoRecenter = !autocenterToggle.classList.contains('checked');
+    viewer.noAutoRecenter = !autocenterToggle.checked;
+    viewer.recenter();
 });
 
 hideFixedToggle.addEventListener('click', () => {
-    hideFixedToggle.classList.toggle('checked');
 
-    const hideFixed = hideFixedToggle.classList.contains('checked');
+    const hideFixed = hideFixedToggle.checked;
     if (hideFixed) controlsel.classList.add('hide-fixed');
     else controlsel.classList.remove('hide-fixed');
 
@@ -129,7 +141,6 @@ viewer.addEventListener('ignore-limits-change', () => {
 
 viewer.addEventListener('angle-change', e => {
 
-    // if (sliders[e.detail]) sliders[e.detail].update();
     updateSliders();
 
 });
@@ -353,7 +364,7 @@ viewer.addEventListener('urdf-processed', () => {
             const slider = li.querySelector('input[type="range"]');
             const input = li.querySelector('input[type="number"]');
             li.update = () => {
-                const degMultiplier = radiansToggle.classList.contains('checked') ? 1.0 : RAD2DEG;
+                const degMultiplier = radiansToggle.checked ? 1.0 : RAD2DEG;
                 let angle = joint.angle;
 
                 if (joint.jointType === 'revolute' || joint.jointType === 'continuous') {
@@ -405,7 +416,7 @@ viewer.addEventListener('urdf-processed', () => {
             });
 
             input.addEventListener('change', () => {
-                const degMultiplier = radiansToggle.classList.contains('checked') ? 1.0 : DEG2RAD;
+                const degMultiplier = radiansToggle.checked ? 1.0 : DEG2RAD;
                 viewer.setJointValue(joint.name, input.value * degMultiplier);
                 li.update();
             });
@@ -508,7 +519,7 @@ const updateAngles = () => {
 
 const updateLoop = () => {
 
-    if (animToggle.classList.contains('checked')) {
+    if (animToggle.checked) {
         updateAngles();
     }
 
@@ -541,7 +552,7 @@ updateList();
 
 document.addEventListener('WebComponentsReady', () => {
 
-    animToggle.addEventListener('click', () => animToggle.classList.toggle('checked'));
+    // animToggle.addEventListener('click', () => animToggle.classList.toggle('checked'));
 
     // stop the animation if user tried to manipulate the model
     viewer.addEventListener('manipulate-start', e => animToggle.classList.remove('checked'));
