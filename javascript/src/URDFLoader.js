@@ -467,6 +467,7 @@ class URDFLoader {
                             .map(v => parseFloat(v));
 
                     material.color.setRGB(rgba[0], rgba[1], rgba[2]);
+                    rgba[3] = 1;
                     material.opacity = rgba[3];
                     material.transparent = rgba[3] < 1;
                     material.depthWrite = !material.transparent;

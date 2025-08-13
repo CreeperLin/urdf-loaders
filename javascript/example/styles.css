@@ -384,3 +384,18 @@ input:focus {
         display: none;
     }
 }
+
+.button {
+    margin-top: 0;
+    transition: 0.1s opacity linear;
+    font-size: 16px;
+    font-weight: bolder;
+    display: inline;
+    margin-right: 10px;
+    /* border: 1px solid white; */
+}
+
+.button:hover {
+    text-decoration: underline;
+    cursor: pointer;
+}

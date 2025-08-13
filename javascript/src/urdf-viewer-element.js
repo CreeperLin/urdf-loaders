@@ -122,7 +122,10 @@ class URDFViewer extends HTMLElement {
         scene.add(dirLight.target);
 
         // Renderer setup
-        const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+        const renderer = new THREE.WebGLRenderer({
+            antialias: true, alpha: true,
+            preserveDrawingBuffer: true,
+        });
         renderer.setClearColor(0xffffff);
         renderer.setClearAlpha(0);
         renderer.shadowMap.enabled = true;
@@ -176,7 +179,8 @@ class URDFViewer extends HTMLElement {
         // Controls setup
         const controls = new OrbitControls(camera, renderer.domElement);
         controls.rotateSpeed = 2.0;
-        controls.zoomSpeed = 5;
+        // controls.zoomSpeed = 5;
+        controls.zoomSpeed = 1;
         controls.panSpeed = 2;
         controls.enableZoom = true;
         controls.enableDamping = false;
@@ -316,6 +320,7 @@ class URDFViewer extends HTMLElement {
             case 'display-shadow': {
                 const dirLight = this.directionalLight;
                 dirLight.castShadow = this.displayShadow;
+                this.redraw();
             }
 
         }
@@ -409,8 +414,12 @@ class URDFViewer extends HTMLElement {
         }
 
         const center = bbox.getCenter(new THREE.Vector3());
-        this.controls.target.y = center.y;
-        this.robot.position.z = this.robot.position.z - bbox.min.y;
+        if (!this.noAutoRecenter) {
+            this.controls.target.y = center.y;
+            this.controls.target.x = 0;
+            this.controls.target.z = 0;
+            this.robot.position.z = this.robot.position.z - bbox.min.y;
+        }
 
         const dirLight = this.directionalLight;
         dirLight.castShadow = this.displayShadow;
@@ -686,6 +695,36 @@ class URDFViewer extends HTMLElement {
 
         }
 
+    }
+
+    saveFrame() {
+        var imgData, imgNode;
+        var strDownloadMime = "image/octet-stream";
+        try {
+            var fmt = 'png';
+            var strMime = "image/" + fmt;
+            imgData = this.renderer.domElement.toDataURL(strMime);
+
+            this.saveFile(imgData.replace(strMime, strDownloadMime), "frame."+fmt);
+
+        } catch (e) {
+            console.log(e);
+            return;
+        }
+
+    }
+
+    saveFile (strData, filename) {
+        var link = document.createElement('a');
+        if (typeof link.download === 'string') {
+            document.body.appendChild(link); //Firefox requires the link to be in the body
+            link.download = filename;
+            link.href = strData;
+            link.click();
+            document.body.removeChild(link); //remove the link when done
+        } else {
+            location.replace(uri);
+        }
     }
 
 };

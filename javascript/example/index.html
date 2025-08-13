@@ -36,8 +36,12 @@
                 <div style="float: left;">
                     <input id="autocenter-toggle" type="checkbox" checked><label for="autocenter-toggle">Autocenter</label>
                     <input id="shadow-toggle" type="checkbox" checked><label for="shadow-toggle">Display Shadow</label>
+                    <input type="color" id="bg-color" name="bg-color" value="#263238" /><label for="bg-color">Background Color</label>
                 </div>
-                <div id="reset-joints" class="button">Reset Joints</div>
+                <div style="float: left;">
+                    <div id="save-frame" class="button">Save Frame</div>
+                    <div id="reset-joints" class="button">Reset Joints</div>
+                </div>
                 <label>
                     Up Axis
                     <select id="up-select">
@@ -49,7 +53,8 @@
                         <option value="-Z" >-Z</option>
                     </select>
                 </label>
-                <ul></ul>
+                <ul id="cam-slider"></ul>
+                <ul id="joint-slider"></ul>
             </div>
         </div>
 

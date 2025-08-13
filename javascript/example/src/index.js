@@ -23,8 +23,13 @@ const radiansToggle = document.getElementById('radians-toggle');
 const autocenterToggle = document.getElementById('autocenter-toggle');
 const shadowToggle = document.getElementById('shadow-toggle');
 
+const bgColor = document.getElementById('bg-color');
+
+const saveFrame = document.getElementById("save-frame");
+
 const upSelect = document.getElementById('up-select');
-const sliderList = document.querySelector('#controls ul');
+const camSliderList = document.getElementById('cam-slider');
+const sliderList = document.getElementById('joint-slider');
 const linkSliderList = document.querySelector('#controls2 ul');
 const controlsel = document.getElementById('controls');
 const control2sel = document.getElementById('controls2');
@@ -107,6 +112,14 @@ hideFixedToggle.addEventListener('click', () => {
 
 });
 
+bgColor.addEventListener('input', (ev) => {
+    setColor(ev.target.value);
+}, false);
+
+saveFrame.addEventListener("click", () => {
+    viewer.saveFrame();
+});
+
 upSelect.addEventListener('change', () => viewer.up = upSelect.value);
 
 controlsToggle.addEventListener('click', () => {
@@ -159,13 +172,13 @@ viewer.addEventListener('joint-mouseover', e => {
     const parent = joint.parent;
 
     // highlight the joint
-    const j = document.querySelector(`li[joint-name="${ jointName }"]`);
+    const j = document.querySelector(`li[joint-name="${jointName}"]`);
     if (j) j.setAttribute('robot-hovered', true);
     // highlight the link
-    const l = document.querySelector(`li[link-name="${ child.name }"]`);
+    const l = document.querySelector(`li[link-name="${child.name}"]`);
     if (l) l.setAttribute('robot-hovered', true);
     // highlight the parent link
-    const pl = document.querySelector(`li[link-name="${ parent.name }"]`);
+    const pl = document.querySelector(`li[link-name="${parent.name}"]`);
     if (pl) pl.setAttribute('robot-hovered', true);
 });
 
@@ -176,13 +189,13 @@ viewer.addEventListener('joint-mouseout', e => {
     const parent = joint.parent;
 
     // highlight the joint
-    const j = document.querySelector(`li[joint-name="${ jointName }"]`);
+    const j = document.querySelector(`li[joint-name="${jointName}"]`);
     if (j) j.removeAttribute('robot-hovered');
     // highlight the link
-    const l = document.querySelector(`li[link-name="${ child.name }"]`);
+    const l = document.querySelector(`li[link-name="${child.name}"]`);
     if (l) l.removeAttribute('robot-hovered');
     // highlight the parent link
-    const pl = document.querySelector(`li[link-name="${ parent.name }"]`);
+    const pl = document.querySelector(`li[link-name="${parent.name}"]`);
     if (pl) pl.removeAttribute('robot-hovered');
 
 });
@@ -190,7 +203,7 @@ viewer.addEventListener('joint-mouseout', e => {
 let originalNoAutoRecenter;
 viewer.addEventListener('manipulate-start', e => {
 
-    const j = document.querySelector(`li[joint-name="${ e.detail }"]`);
+    const j = document.querySelector(`li[joint-name="${e.detail}"]`);
     if (j) {
         j.scrollIntoView({ block: 'nearest' });
         window.scrollTo(0, 0);
@@ -207,8 +220,8 @@ viewer.addEventListener('manipulate-end', e => {
 
 });
 
-function getFloatCtrl(o) { return(parseFloat(o.value)); }
-function getIntCtrl(o) { return(parseInt(o.value)); }
+function getFloatCtrl(o) { return (parseFloat(o.value)); }
+function getIntCtrl(o) { return (parseInt(o.value)); }
 function mouseCtrl(ctrl) {
     var getCtrl = getFloatCtrl;
     var setCtrl = scaledFloatCtrl;
@@ -218,30 +231,30 @@ function mouseCtrl(ctrl) {
     // on mousedown start tracking mouse relative position
     var min = ctrl.min;
     var max = ctrl.max;
-    ctrl.onmousedown = function(e) {
-      startpos = e.clientX;
-      startval = getCtrl(ctrl);
-      if (isNaN(startval)) startval = 0;
-      document.onmousemove = function(e) {
-        var delta = Math.ceil(e.clientX - startpos);      
-        setCtrl(ctrl, startval, delta, min, max);
-      };
-      document.onmouseup = function() {
-        document.onmousemove = null; // remove mousemove to stop tracking
-      };
+    ctrl.onmousedown = function (e) {
+        startpos = e.clientX;
+        startval = getCtrl(ctrl);
+        if (isNaN(startval)) startval = 0;
+        document.onmousemove = function (e) {
+            var delta = Math.ceil(e.clientX - startpos);
+            setCtrl(ctrl, startval, delta, min, max);
+        };
+        document.onmouseup = function () {
+            document.onmousemove = null; // remove mousemove to stop tracking
+        };
     };
-  /*
-  ctrl.addEventListener('touchstart', function(e) {
-    e.preventDefault();
-    startpos = e.touches[0].pageX;
-    startval = getCtrl(ctrl);
-  }, false);
-  ctrl.addEventListener('touchmove', function(e) {
-    e.preventDefault();
-    var delta = Math.ceil(e.touches[0].clientX - startpos);        
-    setCtrl(ctrl, startval, delta);
-  }, false);
-  */
+    /*
+    ctrl.addEventListener('touchstart', function(e) {
+      e.preventDefault();
+      startpos = e.touches[0].pageX;
+      startval = getCtrl(ctrl);
+    }, false);
+    ctrl.addEventListener('touchmove', function(e) {
+      e.preventDefault();
+      var delta = Math.ceil(e.touches[0].clientX - startpos);        
+      setCtrl(ctrl, startval, delta);
+    }, false);
+    */
 }
 
 // takes current value and relative mouse coordinate as arguments
@@ -253,7 +266,7 @@ function scaledFloatCtrl(o, i, x, min, max) {
     let dz = 0.01 * (max - min);
     if (min !== undefined && newVal < min) newVal = min;
     if (max !== undefined && newVal > max) newVal = max;
-    if (Math.abs(incVal)>dz) o.value = newVal; // allow small deadzone
+    if (Math.abs(incVal) > dz) o.value = newVal; // allow small deadzone
 }
 
 // create the sliders
@@ -264,14 +277,49 @@ viewer.addEventListener('urdf-processed', () => {
     const r = viewer.robot;
     const world = viewer.world;
     world.updateMatrixWorld();
+
+    const li = document.createElement('li');
+    li.innerHTML =
+        `
+            <span title="cam_y">Cam Y</span>
+            <input type="range" value="0" step="0.0001"/>
+            <input type="number" step="0.1" />
+            `;
+
+    camSliderList.appendChild(li);
+    const slider = li.querySelector('input[type="range"]');
+    const input = li.querySelector('input[type="number"]');
+    li.update = () => {
+        let z = viewer.controls.target.y;
+        input.value = parseFloat(z);
+        slider.value = z;
+        slider.min = -1;
+        slider.max = 2;
+        input.min = -1;
+        input.max = 2;
+        viewer.redraw();
+        // updateSliders();
+    };
+    slider.addEventListener('input', () => {
+        viewer.controls.target.y = slider.value;
+        li.update();
+    });
+
+    input.addEventListener('change', () => {
+        viewer.controls.target.y = input.value;
+        li.update();
+    });
+    li.update();
+    sliders['__root__'] = li;
+
     Object
         .keys(r.links)
         .map(key => r.links[key])
         .forEach(link => {
             const li = document.createElement('li');
             li.innerHTML =
-            `
-            <span title="${ link.name }">${ link.name }</span>
+                `
+            <span title="${link.name}">${link.name}</span>
             <input class="link_x" type="number" step="0.01" />
             <input class="link_y" type="number" step="0.01" />
             <input class="link_z" type="number" step="0.01" />
@@ -357,8 +405,8 @@ viewer.addEventListener('urdf-processed', () => {
 
             const li = document.createElement('li');
             li.innerHTML =
-            `
-            <span title="${ joint.name }">${ joint.name }</span>
+                `
+            <span title="${joint.name}">${joint.name}</span>
             <input type="range" value="0" step="0.0001"/>
             <input type="number" step="0.1" />
             `;
@@ -411,7 +459,7 @@ viewer.addEventListener('urdf-processed', () => {
                 case 'revolute':
                     break;
                 default:
-                    li.update = () => {};
+                    li.update = () => { };
                     input.remove();
                     slider.remove();
 
