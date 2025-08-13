@@ -163,8 +163,8 @@ class URDFViewer extends HTMLElement {
             new THREE.BoxGeometry(1, 1, 1),
             new THREE.MeshNormalMaterial({ transparent: true, opacity: 0.5 }),
         );
-        cube.castShadow = true;
-        cube.receiveShadow = true;
+        cube.castShadow = false;
+        cube.receiveShadow = false;
         cube.scale.set(0.1, 0.1, 0.1);
         this.cube = cube;
         scene.add(cube);
@@ -311,6 +311,11 @@ class URDFViewer extends HTMLElement {
                 this._setIgnoreLimits(this.ignoreLimits, true);
                 break;
 
+            }
+
+            case 'display-shadow': {
+                const dirLight = this.directionalLight;
+                dirLight.castShadow = this.displayShadow;
             }
 
         }

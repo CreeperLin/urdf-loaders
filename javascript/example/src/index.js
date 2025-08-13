@@ -21,6 +21,8 @@ const axisToggle = document.getElementById('axis-toggle');
 const resetJointsButton = document.getElementById('reset-joints');
 const radiansToggle = document.getElementById('radians-toggle');
 const autocenterToggle = document.getElementById('autocenter-toggle');
+const shadowToggle = document.getElementById('shadow-toggle');
+
 const upSelect = document.getElementById('up-select');
 const sliderList = document.querySelector('#controls ul');
 const linkSliderList = document.querySelector('#controls2 ul');
@@ -49,6 +51,7 @@ const updateViewerOptions = () => {
         showAxis: axisToggle.checked,
         ignoreLimits: limitsToggle.checked,
         noAutoRecenter: !autocenterToggle.checked,
+        displayShadow: shadowToggle.checked,
         // up: upSelect.value,
     };
     // console.log('updateViewerOptions', options);
@@ -90,6 +93,10 @@ resetJointsButton.addEventListener('click', () => {
 autocenterToggle.addEventListener('click', () => {
     viewer.noAutoRecenter = !autocenterToggle.checked;
     viewer.recenter();
+});
+
+shadowToggle.addEventListener('click', () => {
+    viewer.displayShadow = shadowToggle.checked;
 });
 
 hideFixedToggle.addEventListener('click', () => {

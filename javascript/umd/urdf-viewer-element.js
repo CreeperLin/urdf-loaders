@@ -43,7 +43,10 @@
 
         static get observedAttributes() {
 
-            return ['package', 'urdf', 'up', 'display-shadow', 'ambient-color', 'ignore-limits', 'show-collision'];
+            return [
+                'package', 'urdf', 'up', 'display-shadow', 'ambient-color', 'ignore-limits', 'show-collision', 'show-visual',
+                'show-axis',
+            ];
 
         }
 
@@ -73,6 +76,12 @@
 
         get showCollision() { return this.hasAttribute('show-collision') || false; }
         set showCollision(val) { val ? this.setAttribute('show-collision', true) : this.removeAttribute('show-collision'); }
+
+        get showVisual() { return this.hasAttribute('show-visual') ? this.getAttribute('show-visual') === 'true' : true; }
+        set showVisual(val) { val ? this.setAttribute('show-visual', true) : this.setAttribute('show-visual', false); }
+
+        get showAxis() { return this.hasAttribute('show-axis') || false; }
+        set showAxis(val) { val ? this.setAttribute('show-axis', true) : this.removeAttribute('show-axis'); }
 
         get jointValues() {
 
@@ -151,15 +160,41 @@
             const world = new THREE__namespace.Object3D();
             scene.add(world);
 
+            this.planeCollisionMaterial = new THREE.MeshPhongMaterial({
+                transparent: true,
+                opacity: 0.35,
+                shininess: 2.5,
+                premultipliedAlpha: true,
+                color: 0xff38be,
+                polygonOffset: true,
+                polygonOffsetFactor: -1,
+                polygonOffsetUnits: -1,
+            });
+            this.planeMaterial = new THREE__namespace.ShadowMaterial({ side: THREE__namespace.DoubleSide, transparent: true, opacity: 0.25 });
             const plane = new THREE__namespace.Mesh(
-                new THREE__namespace.PlaneGeometry(40, 40),
-                new THREE__namespace.ShadowMaterial({ side: THREE__namespace.DoubleSide, transparent: true, opacity: 0.25 }),
+                new THREE__namespace.PlaneGeometry(5, 5),
+                this.planeMaterial,
+                // planeMaterial,
             );
             plane.rotation.x = -Math.PI / 2;
-            plane.position.y = -0.5;
+            // plane.position.y = -0.5;
+            plane.position.y = -0;
             plane.receiveShadow = true;
-            plane.scale.set(10, 10, 10);
+            // plane.scale.set(10, 10, 10);
             scene.add(plane);
+            const cube = new THREE__namespace.Mesh(
+                new THREE__namespace.BoxGeometry(1, 1, 1),
+                new THREE__namespace.MeshNormalMaterial({ transparent: true, opacity: 0.5 }),
+            );
+            cube.castShadow = true;
+            cube.receiveShadow = true;
+            cube.scale.set(0.1, 0.1, 0.1);
+            this.cube = cube;
+            scene.add(cube);
+            const axis = new THREE__namespace.AxesHelper(1);
+            axis.rotation.x = -Math.PI / 2;
+            scene.add(axis);
+            this.axis = axis;
 
             // Controls setup
             const controls = new OrbitControls_js.OrbitControls(camera, renderer.domElement);
@@ -372,17 +407,28 @@
 
             this.world.updateMatrixWorld();
 
-            const bbox = new THREE__namespace.Box3();
-            bbox.makeEmpty();
+            const bbox_c = new THREE__namespace.Box3();
+            bbox_c.makeEmpty();
             robot.traverse(c => {
-                if (c.isURDFVisual) {
-                    bbox.expandByObject(c);
+                if (c.isURDFCollider) {
+                    bbox_c.expandByObject(c);
                 }
             });
+            const bbox_v = new THREE__namespace.Box3();
+            bbox_v.makeEmpty();
+            robot.traverse(c => {
+                if (c.isURDFVisual) {
+                    bbox_v.expandByObject(c);
+                }
+            });
+            let bbox = bbox_c;
+            if (bbox_c.isEmpty()) {
+                bbox = bbox_v;
+            }
 
             const center = bbox.getCenter(new THREE__namespace.Vector3());
             this.controls.target.y = center.y;
-            this.plane.position.y = bbox.min.y - 1e-3;
+            this.robot.position.z = this.robot.position.z - bbox.min.y;
 
             const dirLight = this.directionalLight;
             dirLight.castShadow = this.displayShadow;
@@ -408,6 +454,7 @@
 
             }
 
+            this.dispatchEvent(new CustomEvent('angle-change', { bubbles: true, cancelable: true, }));
         }
 
         _scheduleLoad() {
@@ -526,6 +573,8 @@
                     }
 
                     this.robot = robot;
+                    console.log('robot', robot);
+                    this.robot.position.z = 0.5;
                     this.world.add(robot);
                     updateMaterials(robot);
 
@@ -559,10 +608,21 @@
         _updateCollisionVisibility() {
 
             const showCollision = this.showCollision;
+            const showVisual = this.showVisual;
+            const showAxis = this.showAxis;
             const collisionMaterial = this._collisionMaterial;
             const robot = this.robot;
 
             if (robot === null) return;
+
+            this.axis.visible = showAxis;
+            this.cube.visible = showAxis;
+
+            if (showCollision) {
+                this.plane.material = this.planeCollisionMaterial;
+            } else {
+                this.plane.material = this.planeMaterial;
+            }
 
             const colliders = [];
             robot.traverse(c => {
@@ -589,6 +649,16 @@
                     }
 
                 });
+
+            });
+
+            robot.traverse(c => {
+
+                if (c.isURDFVisual) {
+
+                    c.visible = showVisual;
+
+                }
 
             });
 
