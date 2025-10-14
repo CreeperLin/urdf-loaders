@@ -277,7 +277,18 @@ input:focus {
     text-overflow: ellipsis;
     overflow: hidden;
     user-select: none;
+    cursor: pointer;
+    transition: opacity 0.2s ease;
 
+}
+
+#controls li span:hover {
+    opacity: 0.7;
+}
+
+#controls li span.pinned {
+    background: rgba(100, 200, 255, 0.3);
+    border-radius: 3px;
 }
 
 #controls li input[type="number"] {
@@ -309,7 +320,18 @@ input:focus {
     text-overflow: ellipsis;
     overflow: hidden;
     user-select: none;
+    cursor: pointer;
+    transition: opacity 0.2s ease;
 
+}
+
+#controls2 li span:hover {
+    opacity: 0.7;
+}
+
+#controls2 li span.pinned {
+    background: rgba(100, 200, 255, 0.3);
+    border-radius: 3px;
 }
 
 #controls2 li input[type="number"] {

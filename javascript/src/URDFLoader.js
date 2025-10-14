@@ -27,6 +27,7 @@ ROS URDf
 
 const tempQuaternion = new THREE.Quaternion();
 const tempEuler = new THREE.Euler();
+const emptyRaycast = () => {};
 
 // take a vector "x y z" and process it into
 // an array [x, y, z]
@@ -385,6 +386,14 @@ class URDFLoader {
 
             }
 
+            // Add arrow helper for joint axis visualization
+            const axisDir = obj.axis || new THREE.Vector3(0, 0, 1);
+            const arrowHelper = new THREE.ArrowHelper(axisDir, new THREE.Vector3(0, 0, 0), 0.2, 0xff0000, 0.05, 0.03);
+            arrowHelper.name = '__joint_axis__';
+            arrowHelper.raycast = emptyRaycast;
+            arrowHelper.visible = false;
+            obj.add(arrowHelper);
+
             return obj;
 
         }
@@ -397,6 +406,12 @@ class URDFLoader {
                 target = new URDFLink();
 
             }
+
+            const axis = new THREE.AxesHelper(0.2);
+            axis.name = '__link_axis__';
+            axis.raycast = emptyRaycast;
+            axis.visible = false;
+            target.add(axis);
 
             const children = [ ...link.children ];
             target.name = link.getAttribute('name');

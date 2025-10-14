@@ -40,6 +40,10 @@ const DEG2RAD = Math.PI / 180;
 const RAD2DEG = 1 / DEG2RAD;
 let sliders = {};
 let linkSliders = {};
+let currentHoveredLink = null; // Track the currently hovered link
+let pinnedLinkName = null; // Track the clicked/pinned link
+let currentHoveredJoint = null; // Track the currently hovered joint
+let pinnedJointName = null; // Track the clicked/pinned joint
 
 // Global Functions
 const setColor = color => {
@@ -64,6 +68,182 @@ const updateViewerOptions = () => {
     Object.keys(options).forEach(key => viewer[key] = options[key]);
 
 }
+
+// Function to show axis for a specific link (on hover)
+const showLinkAxis = (linkName) => {
+    if (!viewer.robot || !viewer.robot.links[linkName]) return;
+
+    // Hide any previously hovered axis (but keep pinned axis visible)
+    if (currentHoveredLink) {
+        const currentLinkName = currentHoveredLink.name;
+        if (currentLinkName !== pinnedLinkName) {
+            const axisHelper = currentHoveredLink.getObjectByName('__link_axis__');
+            if (axisHelper) {
+                axisHelper.visible = false;
+            }
+        }
+    }
+
+    const link = viewer.robot.links[linkName];
+    const axisHelper = link.getObjectByName('__link_axis__');
+    if (axisHelper) {
+        axisHelper.visible = true;
+        currentHoveredLink = link;
+        viewer.redraw();
+    }
+};
+
+// Function to hide the currently displayed link axis (on unhover)
+const hideLinkAxis = () => {
+    if (currentHoveredLink) {
+        const linkName = currentHoveredLink.name;
+        // Only hide if this link is not pinned
+        if (linkName !== pinnedLinkName) {
+            const axisHelper = currentHoveredLink.getObjectByName('__link_axis__');
+            if (axisHelper) {
+                axisHelper.visible = false;
+            }
+        }
+        currentHoveredLink = null;
+        viewer.redraw();
+    }
+};
+
+// Function to toggle pinned axis (on click)
+const togglePinnedAxis = (linkName) => {
+    if (!viewer.robot || !viewer.robot.links[linkName]) return;
+
+    // If clicking on the already pinned link, unpin it
+    if (pinnedLinkName === linkName) {
+        const link = viewer.robot.links[pinnedLinkName];
+        const axisHelper = link.getObjectByName('__link_axis__');
+        if (axisHelper) {
+            axisHelper.visible = false;
+        }
+
+        // Remove visual indicator
+        const oldSpan = document.querySelector(`#controls2 li[link-name="${pinnedLinkName}"] span`);
+        if (oldSpan) oldSpan.classList.remove('pinned');
+
+        pinnedLinkName = null;
+        viewer.redraw();
+    } else {
+        // Hide the previously pinned axis
+        if (pinnedLinkName) {
+            const oldLink = viewer.robot.links[pinnedLinkName];
+            const oldAxisHelper = oldLink.getObjectByName('__link_axis__');
+            if (oldAxisHelper) {
+                oldAxisHelper.visible = false;
+            }
+
+            // Remove visual indicator from old pinned link
+            const oldSpan = document.querySelector(`#controls2 li[link-name="${pinnedLinkName}"] span`);
+            if (oldSpan) oldSpan.classList.remove('pinned');
+        }
+
+        // Pin the new link
+        pinnedLinkName = linkName;
+        const link = viewer.robot.links[linkName];
+        const axisHelper = link.getObjectByName('__link_axis__');
+        if (axisHelper) {
+            axisHelper.visible = true;
+        }
+
+        // Add visual indicator to new pinned link
+        const newSpan = document.querySelector(`#controls2 li[link-name="${linkName}"] span`);
+        if (newSpan) newSpan.classList.add('pinned');
+
+        viewer.redraw();
+    }
+};
+
+// Function to show axis for a specific joint (on hover)
+const showJointAxis = (jointName) => {
+    if (!viewer.robot || !viewer.robot.joints[jointName]) return;
+
+    // Hide any previously hovered axis (but keep pinned axis visible)
+    if (currentHoveredJoint) {
+        const currentJointName = currentHoveredJoint.name;
+        if (currentJointName !== pinnedJointName) {
+            const arrowHelper = currentHoveredJoint.getObjectByName('__joint_axis__');
+            if (arrowHelper) {
+                arrowHelper.visible = false;
+            }
+        }
+    }
+
+    const joint = viewer.robot.joints[jointName];
+    const arrowHelper = joint.getObjectByName('__joint_axis__');
+    if (arrowHelper) {
+        arrowHelper.visible = true;
+        currentHoveredJoint = joint;
+        viewer.redraw();
+    }
+};
+
+// Function to hide the currently displayed joint axis (on unhover)
+const hideJointAxis = () => {
+    if (currentHoveredJoint) {
+        const jointName = currentHoveredJoint.name;
+        // Only hide if this joint is not pinned
+        if (jointName !== pinnedJointName) {
+            const arrowHelper = currentHoveredJoint.getObjectByName('__joint_axis__');
+            if (arrowHelper) {
+                arrowHelper.visible = false;
+            }
+        }
+        currentHoveredJoint = null;
+        viewer.redraw();
+    }
+};
+
+// Function to toggle pinned joint axis (on click)
+const togglePinnedJointAxis = (jointName) => {
+    if (!viewer.robot || !viewer.robot.joints[jointName]) return;
+
+    // If clicking on the already pinned joint, unpin it
+    if (pinnedJointName === jointName) {
+        const joint = viewer.robot.joints[pinnedJointName];
+        const arrowHelper = joint.getObjectByName('__joint_axis__');
+        if (arrowHelper) {
+            arrowHelper.visible = false;
+        }
+
+        // Remove visual indicator
+        const oldSpan = document.querySelector(`#controls li[joint-name="${pinnedJointName}"] span`);
+        if (oldSpan) oldSpan.classList.remove('pinned');
+
+        pinnedJointName = null;
+        viewer.redraw();
+    } else {
+        // Hide the previously pinned axis
+        if (pinnedJointName) {
+            const oldJoint = viewer.robot.joints[pinnedJointName];
+            const oldArrowHelper = oldJoint.getObjectByName('__joint_axis__');
+            if (oldArrowHelper) {
+                oldArrowHelper.visible = false;
+            }
+
+            // Remove visual indicator from old pinned joint
+            const oldSpan = document.querySelector(`#controls li[joint-name="${pinnedJointName}"] span`);
+            if (oldSpan) oldSpan.classList.remove('pinned');
+        }
+
+        // Pin the new joint
+        pinnedJointName = jointName;
+        const joint = viewer.robot.joints[jointName];
+        const arrowHelper = joint.getObjectByName('__joint_axis__');
+        if (arrowHelper) {
+            arrowHelper.visible = true;
+        }
+
+        // Add visual indicator to new pinned joint
+        const newSpan = document.querySelector(`#controls li[joint-name="${jointName}"] span`);
+        if (newSpan) newSpan.classList.add('pinned');
+
+        viewer.redraw();
+    }
+};
 
 updateViewerOptions();
 
@@ -141,6 +321,12 @@ function updateSliders() {
 
 // watch for urdf changes
 viewer.addEventListener('urdf-change', () => {
+
+    // Clean up any hovered link axis and pinned state
+    hideLinkAxis();
+    pinnedLinkName = null;
+    hideJointAxis();
+    pinnedJointName = null;
 
     Object
         .values(sliders)
@@ -329,6 +515,19 @@ viewer.addEventListener('urdf-processed', () => {
             `;
             li.setAttribute('link-name', link.name);
             linkSliderList.appendChild(li);
+
+            // Add hover and click event listeners to the link name span
+            const linkNameSpan = li.querySelector('span');
+            linkNameSpan.addEventListener('mouseenter', () => {
+                showLinkAxis(link.name);
+            });
+            linkNameSpan.addEventListener('mouseleave', () => {
+                hideLinkAxis();
+            });
+            linkNameSpan.addEventListener('click', () => {
+                togglePinnedAxis(link.name);
+            });
+
             // update the joint display
             // const slider = li.querySelector('input[type="range"]');
             // const input = li.querySelector('input[type="number"]');
@@ -414,6 +613,18 @@ viewer.addEventListener('urdf-processed', () => {
             li.setAttribute('joint-name', joint.name);
 
             sliderList.appendChild(li);
+
+            // Add hover and click event listeners to the joint name span
+            const jointNameSpan = li.querySelector('span');
+            jointNameSpan.addEventListener('mouseenter', () => {
+                showJointAxis(joint.name);
+            });
+            jointNameSpan.addEventListener('mouseleave', () => {
+                hideJointAxis();
+            });
+            jointNameSpan.addEventListener('click', () => {
+                togglePinnedJointAxis(joint.name);
+            });
 
             // update the joint display
             const slider = li.querySelector('input[type="range"]');
